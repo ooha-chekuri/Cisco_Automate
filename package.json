@@ -1,0 +1,15 @@
+{
+  "name": "cisco-netacad-study-assist",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Conservative Playwright study assistant for Cisco NetAcad passive course navigation.",
+  "type": "module",
+  "scripts": {
+    "start": "node src/netacad-study-assist.js",
+    "check": "node --check src/netacad-study-assist.js"
+  },
+  "dependencies": {
+    "playwright": "^1.51.1"
+  },
+  "devDependencies": {}
+}
