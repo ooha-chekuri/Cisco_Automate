@@ -8,8 +8,9 @@ const COURSE_URL = process.env.COURSE_URL || "https://www.netacad.com/";
 const MAX_STEPS = Number.parseInt(process.env.MAX_STEPS || "200", 10);
 const REQUIRE_READING_CONFIRMATION = process.env.REQUIRE_READING_CONFIRMATION === "true";
 const MIN_SCROLL_SECONDS = Number.parseInt(process.env.MIN_SCROLL_SECONDS || "15", 10);
-const MAX_SCROLL_SECONDS = Number.parseInt(process.env.MAX_SCROLL_SECONDS || "30", 10);
+const MAX_SCROLL_SECONDS = Number.parseInt(process.env.MAX_SCROLL_SECONDS || "15", 10);
 const VIDEO_MAX_WAIT_SECONDS = Number.parseInt(process.env.VIDEO_MAX_WAIT_SECONDS || "500", 10);
+const VIDEO_PLAYBACK_RATE = Number.parseFloat(process.env.VIDEO_PLAYBACK_RATE || "2");
 const LOG_DIR = path.resolve("logs");
 const USER_DATA_DIR = path.resolve(process.env.USER_DATA_DIR || ".playwright-profile/netacad");
 
@@ -270,14 +271,15 @@ async function handleVideoPage(page) {
     return;
   }
 
-  console.log("Video detected. Attempting playback and waiting for normal completion.");
+  console.log(`Video detected. Attempting playback at ${VIDEO_PLAYBACK_RATE}x and waiting for normal completion.`);
 
-  const started = await video.evaluate((element) => {
+  const started = await video.evaluate((element, playbackRate) => {
+    element.playbackRate = playbackRate;
     element.muted = false;
     return element.play()
       .then(() => true)
       .catch(() => false);
-  }).catch(() => false);
+  }, VIDEO_PLAYBACK_RATE).catch(() => false);
 
   if (!started) {
     console.log("The browser blocked scripted playback. Please press play manually in the visible browser.");
@@ -324,7 +326,10 @@ async function waitForVideoCompletion(video, maxWaitSeconds) {
     }
 
     if (state.paused && state.readyState >= 2) {
-      await video.evaluate((element) => element.play().catch(() => {})).catch(() => {});
+      await video.evaluate((element, playbackRate) => {
+        element.playbackRate = playbackRate;
+        return element.play().catch(() => {});
+      }, VIDEO_PLAYBACK_RATE).catch(() => {});
     }
 
     await delay(2000);

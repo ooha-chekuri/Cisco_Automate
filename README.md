@@ -46,4 +46,5 @@ It still avoids obviously unsafe quiz controls such as submit/check/start-exam s
 - `MIN_SCROLL_SECONDS`: Minimum reading-page scroll duration. Defaults to `15`.
 - `MAX_SCROLL_SECONDS`: Maximum reading-page scroll duration. Defaults to `30`.
 - `VIDEO_MAX_WAIT_SECONDS`: Maximum time to wait for a video before continuing. Defaults to `1800`.
+- `VIDEO_PLAYBACK_RATE`: Video playback speed. Defaults to `2`.
 - `USER_DATA_DIR`: Browser profile folder used to keep login cookies/session storage. Defaults to `.playwright-profile/netacad`.
