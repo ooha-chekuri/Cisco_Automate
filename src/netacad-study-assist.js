@@ -10,7 +10,8 @@ const REQUIRE_READING_CONFIRMATION = process.env.REQUIRE_READING_CONFIRMATION ==
 const MIN_SCROLL_SECONDS = Number.parseInt(process.env.MIN_SCROLL_SECONDS || "15", 10);
 const MAX_SCROLL_SECONDS = Number.parseInt(process.env.MAX_SCROLL_SECONDS || "15", 10);
 const VIDEO_MAX_WAIT_SECONDS = Number.parseInt(process.env.VIDEO_MAX_WAIT_SECONDS || "500", 10);
-const VIDEO_PLAYBACK_RATE = Number.parseFloat(process.env.VIDEO_PLAYBACK_RATE || "2");
+const VIDEO_PLAYBACK_RATE = Number.parseFloat(process.env.VIDEO_PLAYBACK_RATE || "3");
+const VIDEO_MUTED = process.env.VIDEO_MUTED !== "false";
 const LOG_DIR = path.resolve("logs");
 const USER_DATA_DIR = path.resolve(process.env.USER_DATA_DIR || ".playwright-profile/netacad");
 
@@ -271,15 +272,15 @@ async function handleVideoPage(page) {
     return;
   }
 
-  console.log(`Video detected. Attempting playback at ${VIDEO_PLAYBACK_RATE}x and waiting for normal completion.`);
+  console.log(`Video detected. Attempting playback at ${VIDEO_PLAYBACK_RATE}x with ${VIDEO_MUTED ? "mute on" : "sound on"} and waiting for normal completion.`);
 
-  const started = await video.evaluate((element, playbackRate) => {
+  const started = await video.evaluate((element, { playbackRate, muted }) => {
     element.playbackRate = playbackRate;
-    element.muted = false;
+    element.muted = muted;
     return element.play()
       .then(() => true)
       .catch(() => false);
-  }, VIDEO_PLAYBACK_RATE).catch(() => false);
+  }, { playbackRate: VIDEO_PLAYBACK_RATE, muted: VIDEO_MUTED }).catch(() => false);
 
   if (!started) {
     console.log("The browser blocked scripted playback. Please press play manually in the visible browser.");
@@ -326,10 +327,11 @@ async function waitForVideoCompletion(video, maxWaitSeconds) {
     }
 
     if (state.paused && state.readyState >= 2) {
-      await video.evaluate((element, playbackRate) => {
+      await video.evaluate((element, { playbackRate, muted }) => {
         element.playbackRate = playbackRate;
+        element.muted = muted;
         return element.play().catch(() => {});
-      }, VIDEO_PLAYBACK_RATE).catch(() => {});
+      }, { playbackRate: VIDEO_PLAYBACK_RATE, muted: VIDEO_MUTED }).catch(() => {});
     }
 
     await delay(2000);
